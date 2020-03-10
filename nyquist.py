@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 
-Program to draw Nyquist plot 
+Program to plot  Nyquist plot 
 
 written by John Arul
 
@@ -17,25 +17,26 @@ import numpy as np
 import matplotlib.pyplot as plt
 from sympy.geometry import * 
 Pi=math.pi
+import function #import * 
 
 # parameters of function
 
-K=complex(1.0E2,0)
-lam=complex(0.1,0)
-beta=complex(3.0E-3,0)
-L=complex(1.0E-6,0)
+#K=complex(1.0E2,0)
+#lam=complex(0.1,0)
+#beta=complex(3.0E-3,0)
+#L=complex(1.0E-6,0)
 
-def cmap(sp):    
+
+
+
+def cmap(sp):   
+    #takes an array and computes the function defined in function.py
     u=[]
     v=[]
     for s in sp:
-        w =complex(0,0)
-        #w=1.0/(s+2.0)
-        #w =K/(s*L+s*beta/(lam+s))
-        w=240.0/(s-4)/(s+9)/(s+5)
-        #w=(s-1.0)
+        w=function.CF(s)
         u.append(w.real)
-        v.append(w.imag) #cmap(s)
+        v.append(w.imag)
 
     u=np.array(u)
     v=np.array(v)
