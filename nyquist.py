@@ -12,11 +12,9 @@ written by John Arul
 """
 
 import cmath
-import math
 import numpy as np
 import matplotlib.pyplot as plt
 from sympy.geometry import * 
-Pi=math.pi
 import function #import * 
 
 # parameters of function
@@ -46,15 +44,34 @@ def cmap(sp):
 
 
 #constants
+Pi=np.pi
+
 NTP=5000  # N Total number of points
 nop=50    # Number of points per detour arc
 r=1.0     # detur arc radius
-R=500     #  maxiumum w of -jw, jw
+R=50     #  maxiumum w of -jw, jw
 
 
-arcs=[0]  # imaginary part of poles on jy axis
+# imaginary part of poles on jy axis 
+arcs=[]
+
+f1=open('axis_poles.txt','r')
+txt=f1.readline()
+arctxt=txt.split(',')
+arcs=[float(val) for val in arctxt]
+f1.close()
+
+
 narc=len(arcs)
 
+
+# check if poles are closer than the detour arcs
+if  narc >= 2:
+    arcs.sort()
+    dif=[y-x for x,y in zip(arcs[:-1],arcs[1:]) ]
+    if r >= min(dif)/2.0:
+       r= min(dif)/2.2 
+  
 
 lx=[]
 ly=[]
@@ -66,6 +83,22 @@ if narc > 0:
     NOP=int(NTP/narc)
 else:
     NOP=NTP    
+
+
+# alternate segment and arc    [-R,r1,r2,r3,r4,R]   ndet =2
+yseg=[-R]
+for i in range(narc):
+    yseg+=[arcs[i]-r,arcs[i]+r]
+   
+yseg+=[R]
+
+# check for consistency
+for i in range(len(yseg)-1):
+    if yseg[i+1] < yseg[i]:
+        print ("error in dettour specification-over lap between arcs")
+        print ()
+        exit(1)
+
 
 #generate detours
 th=np.linspace(-Pi/2.0,Pi/2.0,nop)
@@ -80,16 +113,9 @@ for i in range(narc):
     
 NSEG=narc+1    
 
-#build segment array 
-# alternate segment and arc    [-R,r1,r2,r3,r4,R]   ndet =2
-yseg=[-R]
-for i in range(narc):
-    yseg+=[arcs[i]-r,arcs[i]+r]
+#build segment array   
     
-yseg+=[R]
-    
-    
-for i in range(NSEG+1): 
+for i in range(NSEG+narc): 
     
     if i % 2 == 0:
         lys=np.linspace(yseg[i],yseg[i+1],NOP)      
@@ -98,11 +124,10 @@ for i in range(NSEG+1):
         lx=np.append(lx,lxs)
     else:
         #detour arc
-        ly= np.append(ly,lst_circy[i-1])
+        j=int((i-1)/2)
+        ly= np.append(ly,lst_circy[j])
         lx= np.append(lx, rx)
     
-
-
 
 th=np.linspace(Pi/2.0,-Pi/2.0,NTP)
 Rc=[cmath.rect(R,t) for t in th]
@@ -126,7 +151,20 @@ Ru,Rv=cmap(sp)
 ax2.plot(u,v,color='blue')
 ax2.plot(Ru,Rv, 'red')
 
+minv=min(Rv)
+miny=min(v)
+maxv=max(Rv)
+maxy=max(v)
+a=min(minv,miny)
+b=max(maxv,maxy)
 
+my=np.linspace(a,b,NTP)
+
+mx=np.zeros(NTP)
+mx=mx-1
+ax2.plot(mx,my,'-.',color='green')
+plt.xlim([-5 ,5])
+plt.ylim([-1,1])
 plt.grid()
 plt.show()
 
