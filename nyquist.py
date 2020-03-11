@@ -61,6 +61,7 @@ arctxt=txt.split(',')
 arcs=[float(val) for val in arctxt]
 f1.close()
 
+arcs=[]
 
 narc=len(arcs)
 
@@ -151,6 +152,8 @@ Ru,Rv=cmap(sp)
 ax2.plot(u,v,color='blue')
 ax2.plot(Ru,Rv, 'red')
 
+
+# min max v in uv plane
 minv=min(Rv)
 miny=min(v)
 maxv=max(Rv)
@@ -158,13 +161,11 @@ maxy=max(v)
 a=min(minv,miny)
 b=max(maxv,maxy)
 
-my=np.linspace(a,b,NTP)
+# not used
 
-mx=np.zeros(NTP)
-mx=mx-1
-ax2.plot(mx,my,'-.',color='green')
-plt.xlim([-5 ,5])
-plt.ylim([-1,1])
+ax2.plot(-1,0,'o',color='green')
+#plt.xlim([-5 ,5])
+#plt.ylim([-1,1])
 plt.grid()
 plt.show()
 
