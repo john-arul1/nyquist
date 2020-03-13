@@ -46,10 +46,10 @@ def cmap(sp):
 #constants
 Pi=np.pi
 
-NTP=5000  # N Total number of points
+NTP=10000  # N Total number of points
 nop=50    # Number of points per detour arc
 r=1.0     # detur arc radius
-R=50     #  maxiumum w of -jw, jw
+R=100     #  maxiumum w of -jw, jw
 
 
 # imaginary part of poles on jy axis 
@@ -61,7 +61,7 @@ arctxt=txt.split(',')
 arcs=[float(val) for val in arctxt]
 f1.close()
 
-arcs=[]
+#arcs=[]
 
 narc=len(arcs)
 
@@ -87,6 +87,7 @@ else:
 
 
 # alternate segment and arc    [-R,r1,r2,r3,r4,R]   ndet =2
+   
 yseg=[-R]
 for i in range(narc):
     yseg+=[arcs[i]-r,arcs[i]+r]
@@ -130,42 +131,63 @@ for i in range(NSEG+narc):
         lx= np.append(lx, rx)
     
 
-th=np.linspace(Pi/2.0,-Pi/2.0,NTP)
-Rc=[cmath.rect(R,t) for t in th]
-Rx=[s.real for s in Rc]
-Ry=[s.imag for s in Rc]
+## append infinities to the line
+lyl=np.logspace(10,np.log10(R),1000)
+#lyl=lyl*-1
+lxx=np.zeros(len(lyl))
+lyy=np.append(lyl*-1,ly)
 
+lyu=np.logspace(np.log10(R),10,1000)
+lyy=np.append(lyy,lyu)        
+
+lxx=np.append(lxx,lx)
+lxu=np.zeros(len(lyu))
+lxx=np.append(lxx,lxu)
+
+
+#th=np.linspace(Pi/2.0,-Pi/2.0,NTP)
+#Rc=[cmath.rect(R,t) for t in th]
+#Rx=[s.real for s in Rc]
+#Ry=[s.imag for s in Rc]
 
 #union of s plane segments lines , detours and sni-circle
 
 fig,(ax1,ax2)=plt.subplots(1,2,sharey=False)
 ax1.plot(lx, ly,color='blue')
-ax1.plot(Rx,Ry,color='red')
+
+#ax1.plot(Rx,Ry,color='red')
+
+# plot arrow
+NA=int(NTP/1.3)
+NN=NA+20
+#ax1.arrow(Rx[NA],Ry[NA],Rx[NN]-Rx[NA],Ry[NN]-Ry[NA],shape='full', lw=5, length_includes_head=True, head_width=1)
 
 
 # complex mapping
-sp=[complex(px,py)  for px,py in zip(lx,ly)]
+sp=[complex(px,py)  for px,py in zip(lxx,lyy)]
 u,v=cmap(sp)
-sp=[complex(px,py)  for px,py in zip(Rx,Ry)]
-Ru,Rv=cmap(sp)
+#sp=[complex(px,py)  for px,py in zip(Rx,Ry)]
+#Ru,Rv=cmap(sp)
 
 ax2.plot(u,v,color='blue')
-ax2.plot(Ru,Rv, 'red')
+#ax2.plot(Ru,Rv, 'red')
 
+
+#plot arrow
+NA=int(NTP/1.3)
+NN=NA+20
+#ax2.arrow(Ru[NA],Rv[NA],Ru[NN]-Ru[NA],Rv[NN]-Rv[NA],shape='full', lw=3, length_includes_head=True, head_width=1)
 
 # min max v in uv plane
-minv=min(Rv)
 miny=min(v)
-maxv=max(Rv)
 maxy=max(v)
-a=min(minv,miny)
-b=max(maxv,maxy)
 
 # not used
 
-ax2.plot(-1,0,'o',color='green')
+#ax2.plot(-1,0,'o',color='green')
 #plt.xlim([-5 ,5])
 #plt.ylim([-1,1])
+
 plt.grid()
 plt.show()
 
