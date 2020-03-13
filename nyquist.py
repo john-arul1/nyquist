@@ -1,14 +1,8 @@
 # -*- coding: utf-8 -*-
 """
-
 Program to plot  Nyquist plot 
-
 written by John Arul
-
-
 10, March 2020
-
-
 """
 
 import cmath
@@ -23,7 +17,6 @@ import function #import *
 #lam=complex(0.1,0)
 #beta=complex(3.0E-3,0)
 #L=complex(1.0E-6,0)
-
 
 
 
@@ -48,20 +41,21 @@ Pi=np.pi
 
 NTP=10000  # N Total number of points
 nop=50    # Number of points per detour arc
+
 r=1.0     # detur arc radius
 R=100     #  maxiumum w of -jw, jw
-
+Rinf=int(1.0E7)
 
 # imaginary part of poles on jy axis 
-arcs=[]
-
-f1=open('axis_poles.txt','r')
-txt=f1.readline()
-arctxt=txt.split(',')
-arcs=[float(val) for val in arctxt]
-f1.close()
-
 #arcs=[]
+#
+#f1=open('axis_poles.txt','r')
+#txt=f1.readline()
+#arctxt=txt.split(',')
+#arcs=[float(val) for val in arctxt]
+#f1.close()
+
+#arcs=[]  # defined in  function file
 
 narc=len(arcs)
 
@@ -132,12 +126,12 @@ for i in range(NSEG+narc):
     
 
 ## append infinities to the line
-lyl=np.logspace(10,np.log10(R),1000)
+lyl=np.logspace(np.log10(Rinf),np.log10(R),100)
 #lyl=lyl*-1
 lxx=np.zeros(len(lyl))
 lyy=np.append(lyl*-1,ly)
 
-lyu=np.logspace(np.log10(R),10,1000)
+lyu=np.logspace(np.log10(R),np.log10(Rinf),100)
 lyy=np.append(lyy,lyu)        
 
 lxx=np.append(lxx,lx)
@@ -145,38 +139,44 @@ lxu=np.zeros(len(lyu))
 lxx=np.append(lxx,lxu)
 
 
-#th=np.linspace(Pi/2.0,-Pi/2.0,NTP)
-#Rc=[cmath.rect(R,t) for t in th]
-#Rx=[s.real for s in Rc]
-#Ry=[s.imag for s in Rc]
+th=np.linspace(Pi/2.0,-Pi/2.0,NTP)
+Rc=[cmath.rect(Rinf,t) for t in th]
+Rx=[s.real for s in Rc]
+Ry=[s.imag for s in Rc]
 
 #union of s plane segments lines , detours and sni-circle
 
 fig,(ax1,ax2)=plt.subplots(1,2,sharey=False)
-ax1.plot(lx, ly,color='blue')
-
-#ax1.plot(Rx,Ry,color='red')
+ax1.plot(lxx, lyy,color='blue')
+ax1.plot(Rx,Ry,color='red')
 
 # plot arrow
-NA=int(NTP/1.3)
-NN=NA+20
-#ax1.arrow(Rx[NA],Ry[NA],Rx[NN]-Rx[NA],Ry[NN]-Ry[NA],shape='full', lw=5, length_includes_head=True, head_width=1)
+ax1.arrow(0,Rinf/10,0,10,shape='full', lw=5, length_includes_head=True, head_width=1)
 
 
 # complex mapping
 sp=[complex(px,py)  for px,py in zip(lxx,lyy)]
 u,v=cmap(sp)
-#sp=[complex(px,py)  for px,py in zip(Rx,Ry)]
-#Ru,Rv=cmap(sp)
+sp=[complex(px,py)  for px,py in zip(Rx,Ry)]
+Ru,Rv=cmap(sp)
 
 ax2.plot(u,v,color='blue')
-#ax2.plot(Ru,Rv, 'red')
+ax2.plot(Ru,Rv, 'red')
 
 
 #plot arrow
-NA=int(NTP/1.3)
-NN=NA+20
-#ax2.arrow(Ru[NA],Rv[NA],Ru[NN]-Ru[NA],Rv[NN]-Rv[NA],shape='full', lw=3, length_includes_head=True, head_width=1)
+c1=[complex(0,Rinf/10)]
+u1,v1=cmap(c1)
+c2=[complex(0,Rinf/10+10)]
+u2,v2=cmap(c2)
+
+dx=u2[0]-u1[0]
+dy=v2[0]-v1[0]
+
+ 
+    
+    
+ax2.arrow(u1[0],v1[0],dx,dy,shape='full', lw=5, length_includes_head=True, head_width=1)
 
 # min max v in uv plane
 miny=min(v)
@@ -185,9 +185,8 @@ maxy=max(v)
 # not used
 
 #ax2.plot(-1,0,'o',color='green')
-#plt.xlim([-5 ,5])
-#plt.ylim([-1,1])
+plt.xlim([-50,50])
+plt.ylim([-1000,1000])
 
 plt.grid()
 plt.show()
-
