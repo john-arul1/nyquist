@@ -9,56 +9,27 @@ import cmath
 import numpy as np
 import matplotlib.pyplot as plt
 from sympy.geometry import * 
-import function #import * 
-
-# parameters of function
-
-#K=complex(1.0E2,0)
-#lam=complex(0.1,0)
-#beta=complex(3.0E-3,0)
-#L=complex(1.0E-6,0)
-
-
-
-def cmap(sp):   
-    #takes an array and computes the function defined in function.py
-    u=[]
-    v=[]
-    for s in sp:
-        w=function.CF(s)
-        u.append(w.real)
-        v.append(w.imag)
-
-    u=np.array(u)
-    v=np.array(v)
-    return u,v
-
-
-
+from function import * 
+import cauchy
 
 #constants
 Pi=np.pi
 
-NTP=10000  # N Total number of points
-nop=50    # Number of points per detour arc
 
-r=1.0     # detur arc radius
+NTP=10000  # N Total number of points
+nop=100    # Number of points per detour arc
+
+r=0.01     # detur arc radius
 R=100     #  maxiumum w of -jw, jw
-Rinf=int(1.0E7)
+Rinf=int(1.0E3)
+
+shift=0.0
 
 # imaginary part of poles on jy axis 
 #arcs=[]
-#
-#f1=open('axis_poles.txt','r')
-#txt=f1.readline()
-#arctxt=txt.split(',')
-#arcs=[float(val) for val in arctxt]
-#f1.close()
-
 #arcs=[]  # defined in  function file
 
 narc=len(arcs)
-
 
 # check if poles are closer than the detour arcs
 if  narc >= 2:
@@ -75,7 +46,7 @@ Ry=[]
 
 #generate points along imaginary axis
 if narc > 0:
-    NOP=int(NTP/narc)
+    NOP=int(NTP/(narc+1))
 else:
     NOP=NTP    
 
@@ -91,7 +62,7 @@ yseg+=[R]
 # check for consistency
 for i in range(len(yseg)-1):
     if yseg[i+1] < yseg[i]:
-        print ("error in dettour specification-over lap between arcs")
+        print ("error in detour specification-over lap between arcs")
         print ()
         exit(1)
 
@@ -102,15 +73,14 @@ Rc=[cmath.rect(r,t) for t in th]
 rx=[s.real for s in Rc]
 ry=[s.imag for s in Rc]
 
-lst_circy=[]   # arc coordinates  ry are shifted
+lst_arcs=[]   # arc coordinates  ry are shifted
 for i in range(narc):
     ryp=[ry1+arcs[i] for ry1 in ry]
-    lst_circy+=[ryp]
+    lst_arcs+=[ryp]
     
 NSEG=narc+1    
 
-#build segment array   
-    
+#build segment array       
 for i in range(NSEG+narc): 
     
     if i % 2 == 0:
@@ -121,23 +91,13 @@ for i in range(NSEG+narc):
     else:
         #detour arc
         j=int((i-1)/2)
-        ly= np.append(ly,lst_circy[j])
+        ly= np.append(ly,lst_arcs[j])
         lx= np.append(lx, rx)
     
 
-## append infinities to the line
-lyl=np.logspace(np.log10(Rinf),np.log10(R),100)
-#lyl=lyl*-1
-lxx=np.zeros(len(lyl))
-lyy=np.append(lyl*-1,ly)
-
-lyu=np.logspace(np.log10(R),np.log10(Rinf),100)
-lyy=np.append(lyy,lyu)        
-
-lxx=np.append(lxx,lx)
-lxu=np.zeros(len(lyu))
-lxx=np.append(lxx,lxu)
-
+lxx=lx
+lyy=ly
+Rinf=R
 
 th=np.linspace(Pi/2.0,-Pi/2.0,NTP)
 Rc=[cmath.rect(Rinf,t) for t in th]
@@ -147,46 +107,60 @@ Ry=[s.imag for s in Rc]
 #union of s plane segments lines , detours and sni-circle
 
 fig,(ax1,ax2)=plt.subplots(1,2,sharey=False)
+#ax1.plot(rx, ry,color='blue')
 ax1.plot(lxx, lyy,color='blue')
 ax1.plot(Rx,Ry,color='red')
 
-# plot arrow
-ax1.arrow(0,Rinf/10,0,10,shape='full', lw=5, length_includes_head=True, head_width=1)
-
+# plot arrow to be done
+#ci=int(len(Rx)/2)
+#dx=(Rx[ci+2]-Rx[ci])
+#dy=(Ry[ci+2]-Ry[ci])
+#ax1.arrow(Rx[ci],Ry[ci],dx,dy,shape='full', lw=1, length_includes_head=True, head_width=2.0)
 
 # complex mapping
-sp=[complex(px,py)  for px,py in zip(lxx,lyy)]
-u,v=cmap(sp)
-sp=[complex(px,py)  for px,py in zip(Rx,Ry)]
-Ru,Rv=cmap(sp)
+#sp1=[complex(px,py)  for px,py in zip(rx,ry)]
+sp1=[complex(px,py)  for px,py in zip(lxx,lyy)]
+u,v=cmap(sp1)
+sp2=[complex(px,py)  for px,py in zip(Rx,Ry)]
+Ru,Rv=cmap(sp2)
 
 ax2.plot(u,v,color='blue')
 ax2.plot(Ru,Rv, 'red')
 
 
-#plot arrow
-c1=[complex(0,Rinf/10)]
-u1,v1=cmap(c1)
-c2=[complex(0,Rinf/10+10)]
-u2,v2=cmap(c2)
-
-dx=u2[0]-u1[0]
-dy=v2[0]-v1[0]
-
- 
-    
-    
-ax2.arrow(u1[0],v1[0],dx,dy,shape='full', lw=5, length_includes_head=True, head_width=1)
-
-# min max v in uv plane
-miny=min(v)
-maxy=max(v)
-
-# not used
+#plot arrow to be done
+#ci=int(len(u)/2)
+#dx=u[ci+2]-u[ci]
+#dy=v[ci+2]-v[ci]
+#
+#ax2.arrow(u[ci],v[ci],dx,dy,shape='full', lw=0.5, length_includes_head=True, head_width=0.2)
 
 #ax2.plot(-1,0,'o',color='green')
-plt.xlim([-50,50])
-plt.ylim([-1000,1000])
-
+plt.xlim([-2,2])
+plt.ylim([-1,1])
 plt.grid()
 plt.show()
+
+# Cauchy plot
+flg_cauchy=0
+if flg_cauchy ==1:
+    x,y,u,v = cauchy.Cauchy(1000,20)
+    fig,(ax1,ax2)=plt.subplots(1,2,sharey=False)
+    ax1.plot(x,y,color='blue')
+    
+    ci=int(len(x)/2)
+    dx=x[ci+2]-x[ci]
+    dy=y[ci+2]-y[ci]
+    ax1.arrow(x[ci],y[ci],dx,dy,shape='full', lw=1, length_includes_head=True, head_width=1)
+
+    ax2.plot(u,v,color='red')
+    dx=u[ci+2]-u[ci]
+    dy=v[ci+2]-v[ci]
+    
+    ax2.arrow(u[ci],v[ci],dx,dy,shape='full', lw=1, length_includes_head=True, head_width=0.01)
+    
+    plt.grid()
+    plt.show()
+
+
+
